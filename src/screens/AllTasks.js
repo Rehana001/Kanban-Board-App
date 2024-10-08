@@ -1,71 +1,53 @@
-import { StyleProp,
-  ViewStyle,
-  Animated,
-  StyleSheet,
-  Platform,
-  ScrollView,
-  Text,
-  SafeAreaView,
-  I18nManager, } from 'react-native'
-import React from 'react'
-import { AnimatedFAB } from 'react-native-paper';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+// src/screens/AllTasks.js
+import React, { useEffect } from 'react';
+import { View, Text, Button, StyleSheet } from 'react-native';
+import KanbanColumn from '../components/Kanbancolumn'; // Adjust the path if necessary
+import { useDispatch, useSelector } from 'react-redux';
+import { setColumns, addTask } from '../Redux/taskSlice'; // Ensure this path is correct
+import { moderateScale } from 'react-native-size-matters';
 
-const AllTasks = ({
-  animatedValue,
-  visible,
-  extended,
-  label,
-  animateFrom,
-  style,
-  iconMode,
-  navigation
-}) => {
+const AllTasks = () => {
+  const dispatch = useDispatch();
+  const columns = useSelector((state) => state.tasks.columns); // Accessing columns from Redux state
 
-  const [isExtended, setIsExtended] = React.useState(true);
+  useEffect(() => {
+    // Initialize columns is handled in the Redux slice
+  }, [dispatch]);
 
-  const isIOS = Platform.OS === 'ios';
-
-  const onScroll = ({ nativeEvent }) => {
-    const currentScrollPosition =
-      Math.floor(nativeEvent?.contentOffset?.y) ?? 0;
-
-    setIsExtended(currentScrollPosition <= 0);
+  // Function to add a task in a specific column
+  const handleAddTask = (columnId) => {
+    const newTask = {
+      name: 'New Task',
+      desc: 'Task description',
+      comments: [],
+      attachments: [],
+    };
+    dispatch(addTask({ columnId, task: newTask }));
   };
 
-  const fabStyle = { [animateFrom]: 16 };
-
-
   return (
-     <SafeAreaView style={styles.container}>
-      <ScrollView onScroll={onScroll}>
-        {[...new Array(100).keys()].map((_, i) => (
-          <Text>{i}</Text>
-        ))}
-      </ScrollView>
-      <AnimatedFAB
-        icon={() => <MaterialCommunityIcons name="plus" size={20} color="#200652" />}
-        label={'Create Task'}
-        extended={isExtended}
-        onPress={() => navigation.navigate('CreateTask')}
-        visible={visible}
-        animateFrom={'right'}
-        iconMode={'static'}
-        style={[styles.fabStyle, style, fabStyle]}
-      />
-    </SafeAreaView>
-  )
-}
+    <View style={styles.container}>
+      <Text style={styles.KanbanBoardTitle}>Kanban Board</Text>
+      {columns.map((column) => (
+        <View key={column.id}>
+          <KanbanColumn columnId={column.id} title={column.title} />
+        </View>
+      ))}
+    </View>
+  );
+};
 
-export default AllTasks
+export default AllTasks;
+
 
 const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
+  container:{
+    flex:1,
+    padding:moderateScale(10,0.1)
   },
-  fabStyle: {
-    bottom: 16,
-    right: 16,
-    position: 'absolute',
-  },
+  KanbanBoardTitle:{
+    fontSize:moderateScale(24,0.1),
+    color:'black',
+    fontWeight:'bold'
+  }
 })
